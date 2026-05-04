@@ -48,7 +48,7 @@ export const DEFAULT_ASSUMPTIONS: Assumptions = {
   overtime: { Nigeria: 0.015, 'South Africa': 0.023, 'United States': 0.020 },
   rolePremiums: { qa: 0.10, tl: 0.20 },
   approvalWindowHours: 24,
-  approverEmail: '',
+  approverEmail: 'oluwadamilola.ojo@hugotech.co',
 }
 
 const STORAGE_KEY = 'hugo_assumptions'
