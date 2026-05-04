@@ -1,38 +1,101 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Serif+Display:ital@0;1&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
-  body { @apply font-sans; }
+  body {
+    @apply font-sans bg-cream-100 text-hugo-black min-h-screen;
+  }
 }
 
 @layer components {
-  .input-field {
-    @apply w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-transparent bg-white;
+  /* ── Inputs ── */
+  .hugo-input {
+    @apply w-full border border-cream-300 rounded-lg px-3 py-2 text-sm font-medium
+           bg-cream-50 text-hugo-black outline-none
+           focus:border-hugo-gold focus:ring-1 focus:ring-hugo-gold/30
+           transition-colors;
+    font-family: 'DM Sans', sans-serif;
   }
-  .label { @apply block text-xs font-medium text-gray-600 mb-1; }
-  .card { @apply bg-white rounded-xl border border-gray-200 shadow-sm; }
-  .section-header {
-    @apply bg-navy-600 text-white text-xs font-bold uppercase tracking-wide px-4 py-2 rounded-t-lg;
+  .hugo-select {
+    @apply hugo-input appearance-none cursor-pointer;
   }
-  .row-even { @apply bg-gray-50; }
-  .row-odd  { @apply bg-white; }
-  .checkpoint-row { @apply bg-teal-500 text-white font-bold text-sm; }
-  .flag-green { @apply bg-green-700 text-white; }
-  .flag-red   { @apply bg-red-700 text-white; }
-  .btn-primary {
-    @apply bg-navy-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-navy-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+  .field-label {
+    @apply block text-[10px] font-semibold uppercase tracking-widest text-hugo-muted mb-1;
   }
-  .btn-secondary {
-    @apply bg-white text-navy-600 border border-navy-200 px-4 py-2 rounded-lg text-sm font-medium hover:bg-navy-50 transition-colors;
+
+  /* ── Chips ── */
+  .chip {
+    @apply px-3 py-1.5 rounded-chip text-[11px] font-medium border border-cream-300
+           text-hugo-muted bg-transparent cursor-pointer transition-all;
+  }
+  .chip-active {
+    @apply bg-hugo-black text-cream-100 border-hugo-black;
+  }
+  .chip-gold {
+    @apply bg-hugo-yellow text-hugo-black border-hugo-yellow;
+  }
+
+  /* ── Section labels ── */
+  .sec-label {
+    @apply text-[9px] font-bold uppercase tracking-[0.14em] text-cream-400 mb-2 mt-4 first:mt-0;
+  }
+
+  /* ── Buttons ── */
+  .btn-submit {
+    @apply w-full py-3.5 rounded-chip bg-hugo-yellow text-hugo-black
+           text-sm font-bold cursor-pointer border-none
+           hover:bg-hugo-gold transition-colors;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .btn-ghost {
+    @apply px-4 py-2 rounded-lg text-[12px] font-medium text-hugo-muted
+           border border-cream-300 bg-transparent cursor-pointer hover:bg-cream-200 transition-colors;
   }
   .btn-danger {
-    @apply bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-700 transition-colors;
+    @apply px-4 py-2 rounded-lg text-[12px] font-medium
+           bg-red-700 text-white border-none cursor-pointer hover:bg-red-800 transition-colors;
   }
   .btn-success {
-    @apply bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-800 transition-colors;
+    @apply px-4 py-2 rounded-lg text-[12px] font-medium
+           bg-emerald-700 text-white border-none cursor-pointer hover:bg-emerald-800 transition-colors;
   }
-  .status-badge {
-    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+
+  /* ── Status badges ── */
+  .status-ok  { @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-900/20 text-emerald-400; }
+  .status-bad { @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-red-900/20 text-red-400; }
+  .status-pending { @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-yellow-900/20 text-hugo-yellow; }
+  .status-overdue { @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-orange-900/20 text-orange-400; }
+  .status-rejected { @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-red-900/20 text-red-400; }
+  .status-approved { @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800; }
+
+  /* ── P&L Panel (dark) ── */
+  .wf-row {
+    @apply flex justify-between items-center py-1.5 border-b border-hugo-border text-[11px];
   }
+  .wf-label  { @apply text-hugo-muted; }
+  .wf-val    { @apply font-semibold text-hugo-light font-serif; }
+  .wf-total  { @apply flex justify-between items-center px-3 py-2 rounded-lg bg-hugo-row my-1; }
+  .wf-total-label { @apply text-[10px] font-semibold text-hugo-muted; }
+  .wf-total-val   { @apply text-[13px] font-bold text-cream-100 font-serif; }
+  .checkpoint {
+    @apply flex justify-between items-center px-3 py-2.5 rounded-lg my-1.5
+           border border-hugo-yellow/30 bg-hugo-yellow/10;
+  }
+  .checkpoint-label { @apply text-[10px] font-bold text-hugo-yellow tracking-wide; }
+  .kpi-box {
+    @apply rounded-lg p-2.5 bg-hugo-row;
+  }
+  .kpi-box-label { @apply text-[9px] text-hugo-faint mb-0.5 font-medium uppercase tracking-wide; }
+  .kpi-box-val   { @apply text-[14px] font-bold text-hugo-light font-serif; }
+
+  /* ── Rate boxes ── */
+  .rate-box-floor    { @apply rounded-xl p-3 bg-amber-50 border border-amber-200; }
+  .rate-box-proposed { @apply rounded-xl p-3 bg-emerald-50 border border-emerald-200; }
+
+  /* ── Deal log table ── */
+  .deal-row { @apply border-b border-cream-300 hover:bg-cream-200/50 transition-colors; }
+  .deal-cell { @apply px-4 py-3 text-sm text-hugo-black; }
+  .deal-cell-muted { @apply px-4 py-3 text-sm text-hugo-muted; }
 }

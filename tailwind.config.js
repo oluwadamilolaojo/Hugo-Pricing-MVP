@@ -4,13 +4,33 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        navy: {
-          50: '#EEF2F7', 100: '#D6DCE4', 200: '#B0BCCC', 300: '#7E94AE',
-          400: '#4F6B8A', 500: '#2E5FA3', 600: '#1F3864', 700: '#162845', 800: '#0D1B2E',
+        cream: {
+          50:  '#FEFCF6',
+          100: '#F5F0E8',
+          200: '#EDE5D4',
+          300: '#DDD5C4',
+          400: '#C9BDA8',
         },
-        teal: { 500: '#1F6B63', 600: '#165950' },
+        hugo: {
+          black:  '#1A1A1A',
+          yellow: '#F5C518',
+          gold:   '#C9A800',
+          dark:   '#2A2A2A',
+          panel:  '#1A1A1A',
+          row:    '#242424',
+          border: '#2E2E2E',
+          muted:  '#888888',
+          faint:  '#555555',
+          light:  '#CCCCCC',
+        },
       },
-      fontFamily: { sans: ['Inter', 'Arial', 'sans-serif'] },
+      fontFamily: {
+        sans:  ['DM Sans', 'sans-serif'],
+        serif: ['DM Serif Display', 'serif'],
+      },
+      borderRadius: {
+        chip: '20px',
+      },
     },
   },
   plugins: [],
