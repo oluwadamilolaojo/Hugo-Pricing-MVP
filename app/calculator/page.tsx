@@ -11,7 +11,11 @@ import type { DealInputs, Assumptions, Deal } from '@/lib/types'
 import { v4 as uuid } from 'uuid'
 
 const DRAFT_KEY = 'hugo_calculator_draft'
-
+const COMPLEXITY_DESCRIPTIONS: Record<string, string> = {
+  Standard: 'Straightforward non-voice work any graduate can pick up with standard onboarding. Single workstream, single stakeholder, no specialist knowledge required. Think email support, chat, simple back office. Something Hugo already does at scale.',
+  Intermediate: 'Voice CX (any voice project qualifies — agents speak directly with clients), or non-voice with multiple workstreams, multiple stakeholders, or specialist domain context. Examples: healthcare admin, insurance processing, anything where domain knowledge affects quality. Confirm this tier with delivery lead before submitting.',
+  High: 'Voice CX in a highly specialised field, or any project requiring professional credentials or technical skills. Examples: Aurora (requires architects), tier 3 developer support (agents must read and apply code), licensed professionals, highly regulated work. If you have to ask whether someone is qualified — it\'s High.',
+}
 const DEFAULT_INPUTS: DealInputs = {
   clientName: '', salesperson: '', salespersonEmail: '',
   dateOfPricing: new Date().toISOString().split('T')[0],
@@ -277,7 +281,7 @@ export default function Calculator() {
               </div>
               <div className="mt-2">
                 <SelField label="Complexity" value={inputs.complexityTier} onChange={v => set('complexityTier', v as DealInputs['complexityTier'])} options={['Standard', 'Intermediate', 'High']} />
-              </div>
+{inputs.complexityTier && <p className="text-[10px] text-hugo-muted italic mt-1.5 leading-relaxed">{COMPLEXITY_DESCRIPTIONS[inputs.complexityTier]}</p>}
 
               {/* Fix 4: Advanced team options — collapsed */}
               <AdvancedSection label="Advanced — ratios & buffers">
