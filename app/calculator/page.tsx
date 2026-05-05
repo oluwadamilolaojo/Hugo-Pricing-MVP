@@ -281,7 +281,7 @@ export default function Calculator() {
               </div>
               <div className="mt-2">
                 <SelField label="Complexity" value={inputs.complexityTier} onChange={v => set('complexityTier', v as DealInputs['complexityTier'])} options={['Standard', 'Intermediate', 'High']} />
-              </div>
+{inputs.complexityTier && <p className="text-[10px] text-hugo-muted italic mt-1.5 leading-relaxed">{COMPLEXITY_DESCRIPTIONS[inputs.complexityTier]}</p>}
 
               {/* Fix 4: Advanced team options — collapsed */}
               <AdvancedSection label="Advanced — ratios & buffers">
