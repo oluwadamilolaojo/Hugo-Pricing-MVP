@@ -1,7 +1,6 @@
 'use client'
-export const dynamic = 'force-dynamic'
 // Fix 3: Draft auto-save to localStorage
-// Fix 4: Progressive disclosure — collapse advanced inputs
+// Fix 4: Progressive disclosure  -  collapse advanced inputs
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import Nav from '@/components/Nav'
 import AuthGuard from '@/components/AuthGuard'
@@ -14,9 +13,9 @@ import { v4 as uuid } from 'uuid'
 
 const DRAFT_KEY = 'hugo_calculator_draft'
 const COMPLEXITY_DESCRIPTIONS: Record<string, string> = {
-  Standard: 'Straightforward non-voice work any graduate can pick up with standard onboarding. Single workstream, single stakeholder, no specialist knowledge required. Think email support, chat, simple back office. Something Hugo already does at scale.',
-  Intermediate: 'Voice CX (any voice project qualifies — agents speak directly with clients), or non-voice with multiple workstreams, multiple stakeholders, or specialist domain context. Examples: healthcare admin, insurance processing, anything where domain knowledge affects quality. Confirm this tier with delivery lead before submitting.',
-  High: 'Voice CX in a highly specialised field, or any project requiring professional credentials or technical skills. Examples: Aurora (requires architects), tier 3 developer support (agents must read and apply code), licensed professionals, highly regulated work. If you have to ask whether someone is qualified — it\'s High.',
+  Standard: 'Standard description',
+  Intermediate: 'Intermediate description',
+  High: 'High description',
 }
 const DEFAULT_INPUTS: DealInputs = {
   clientName: '', salesperson: '', salespersonEmail: '',
@@ -63,6 +62,7 @@ function AdvancedSection({ label, children }: { label: string; children: React.R
       </button>
       {open && <div className="pt-1 pb-2">{children}</div>}
     </div>
+    </AuthGuard>
   )
 }
 
@@ -200,7 +200,7 @@ export default function Calculator() {
       {/* Fix 3: Draft restored banner */}
       {hasDraft && !submitted && (
         <div className="bg-amber-50 border-b border-amber-200 text-amber-700 text-sm text-center py-2 flex items-center justify-center gap-3">
-          <span>Draft restored — your previous inputs have been saved.</span>
+          <span>Draft restored  -  your previous inputs have been saved.</span>
           <button onClick={handleReset} className="text-amber-500 underline text-xs hover:text-amber-700">Start fresh</button>
         </div>
       )}
@@ -212,7 +212,7 @@ export default function Calculator() {
           <h1 className="font-serif text-[32px] text-hugo-black leading-tight">
             Price your <em className="text-hugo-gold not-italic">next deal.</em>
           </h1>
-          <p className="text-[12px] text-hugo-muted mt-1">Real numbers, no surprises — leadership and ops costs always included.</p>
+          <p className="text-[12px] text-hugo-muted mt-1">Real numbers, no surprises  -  leadership and ops costs always included.</p>
         </div>
 
         <div className="grid grid-cols-1 xl:grid-cols-[400px,1fr] gap-6 items-start">
@@ -275,7 +275,7 @@ export default function Calculator() {
                 ))}
               </div>
 
-              {/* 4. Team — just the core numbers visible by default */}
+              {/* 4. Team  -  just the core numbers visible by default */}
               <SecLabel n="4" label="Team" />
               <div className="grid grid-cols-3 gap-2.5">
                 <NumField label="Agents" value={inputs.billableAgents} onChange={v => set('billableAgents', v)} min={1} />
@@ -287,8 +287,8 @@ export default function Calculator() {
   {inputs.complexityTier && <p className="text-[10px] text-hugo-muted italic mt-1.5 leading-relaxed">{COMPLEXITY_DESCRIPTIONS[inputs.complexityTier]}</p>}
 </div>
 
-              {/* Fix 4: Advanced team options — collapsed */}
-              <AdvancedSection label="Advanced — ratios & buffers">
+              {/* Fix 4: Advanced team options  -  collapsed */}
+              <AdvancedSection label="Advanced  -  ratios & buffers">
                 <div className="bg-amber-50/60 border border-amber-200 rounded-lg px-3 py-2 text-[10px] text-amber-700 mb-3">
                   Clients often specify QA and TL ratios. For small deals (&lt;5 agents) use a dedicated TL ratio of 5:1.
                 </div>
@@ -301,7 +301,7 @@ export default function Calculator() {
                 </div>
               </AdvancedSection>
 
-              {/* 5. Pricing — the most important section */}
+              {/* 5. Pricing  -  the most important section */}
               <SecLabel n="5" label="Pricing" />
               <div className="grid grid-cols-2 gap-2.5 mb-2.5">
                 <div className="rounded-xl p-3 bg-amber-50 border border-amber-200">
@@ -335,8 +335,8 @@ export default function Calculator() {
                 </div>
               )}
 
-              {/* Fix 4: Advanced pricing — collapsed */}
-              <AdvancedSection label="Advanced — revenue reduction, FX, one-off costs">
+              {/* Fix 4: Advanced pricing  -  collapsed */}
+              <AdvancedSection label="Advanced  -  revenue reduction, FX, one-off costs">
                 <div className="grid grid-cols-2 gap-2.5">
                   <div>
                     <div className="field-label">Revenue reduction %</div>
@@ -357,8 +357,8 @@ export default function Calculator() {
                 </div>
               </AdvancedSection>
 
-              {/* Fix 4: Advanced ops — collapsed */}
-              <AdvancedSection label="Advanced — operating hours & infrastructure">
+              {/* Fix 4: Advanced ops  -  collapsed */}
+              <AdvancedSection label="Advanced  -  operating hours & infrastructure">
                 <div className="grid grid-cols-2 gap-2.5">
                   <NumField label="Weekly hours of operation" value={inputs.weeklyHours} onChange={v => set('weeklyHours', v)} min={1} max={168} />
                   <SelField label="Shift type" value={inputs.shiftType} onChange={v => set('shiftType', v as DealInputs['shiftType'])} options={['Single (9-5)', 'Double Day', 'All Day / 24-7']} />
@@ -369,8 +369,8 @@ export default function Calculator() {
                 </div>
               </AdvancedSection>
 
-              {/* Deal meta — collapsed */}
-              <AdvancedSection label="Deal details — name, salesperson, duration">
+              {/* Deal meta  -  collapsed */}
+              <AdvancedSection label="Deal details  -  name, salesperson, duration">
                 <div className="grid grid-cols-1 gap-2.5">
                   <div>
                     <div className="field-label">Client name</div>

@@ -1,7 +1,9 @@
 'use client'
+export const dynamic = 'force-dynamic'
 import { useState, useEffect, useCallback } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Nav from '@/components/Nav'
+import AuthGuard from '@/components/AuthGuard'
 import { getDeals, updateDealStatus, dealsToCSV, downloadCSV, checkOverdueDeals } from '@/lib/storage'
 import { loadAssumptions } from '@/lib/assumptions'
 import { fmt } from '@/lib/calculations'
@@ -110,6 +112,7 @@ export default function DealsClient() {
     setSelectedIds(selectedIds.size === filtered.length ? new Set() : new Set(filtered.map(d => d.id)))
 
   return (
+    <AuthGuard>
     <div className="min-h-screen bg-cream-100">
       <Nav />
 
@@ -317,5 +320,6 @@ export default function DealsClient() {
         </div>
       )}
     </div>
+    </AuthGuard>
   )
 }
