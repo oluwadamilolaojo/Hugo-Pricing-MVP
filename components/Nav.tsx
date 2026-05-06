@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { useAuth } from '@/lib/AuthContext'
+import { isAdmin } from '@/lib/roles'
 import Image from 'next/image'
 
 export default function Nav() {
@@ -23,6 +24,8 @@ export default function Nav() {
     <nav className="bg-cream-100 border-b border-cream-300 sticky top-0 z-40">
       <div className="max-w-screen-2xl mx-auto px-6">
         <div className="flex items-center justify-between h-14">
+
+          {/* Logo — no black square, just hugo in gold */}
           <div className="flex items-center gap-3">
             <span className="font-serif text-[20px] text-hugo-gold tracking-tight">hugo</span>
             <span className="text-[9px] font-bold uppercase tracking-widest bg-hugo-black text-cream-100 px-2 py-0.5 rounded-full">
@@ -30,6 +33,7 @@ export default function Nav() {
             </span>
           </div>
 
+          {/* Nav links */}
           <div className="flex items-center gap-1">
             {[
               { href: '/calculator', label: 'Calculator' },
@@ -43,6 +47,7 @@ export default function Nav() {
               </Link>
             ))}
 
+            {/* Account dropdown */}
             <div className="relative ml-1">
               <button onClick={() => setSettingsOpen(!settingsOpen)}
                 className={`px-3 py-2 rounded-chip text-[12px] font-medium transition-all flex items-center gap-2 ${
@@ -65,16 +70,26 @@ export default function Nav() {
 
               {settingsOpen && (
                 <div className="absolute right-0 top-full mt-2 w-52 bg-cream-50 border border-cream-300 rounded-xl shadow-lg z-50 overflow-hidden">
+
+                  {/* User info */}
                   {user && (
                     <div className="px-4 py-3 border-b border-cream-300">
                       <p className="text-[12px] font-semibold text-hugo-black truncate">{user.displayName}</p>
                       <p className="text-[10px] text-hugo-muted truncate">{user.email}</p>
+                      {isAdmin(user.email) && (
+                        <span className="text-[9px] font-bold uppercase tracking-wide text-hugo-gold">Admin</span>
+                      )}
                     </div>
                   )}
-                  <Link href="/settings" onClick={() => setSettingsOpen(false)}
-                    className="flex items-center gap-2 px-4 py-3 text-[12px] text-hugo-black hover:bg-cream-200 transition-colors">
-                    Assumptions
-                  </Link>
+
+                  {/* Assumptions — only visible to admins */}
+                  {isAdmin(user?.email) && (
+                    <Link href="/settings" onClick={() => setSettingsOpen(false)}
+                      className="flex items-center gap-2 px-4 py-3 text-[12px] text-hugo-black hover:bg-cream-200 transition-colors">
+                      Assumptions
+                    </Link>
+                  )}
+
                   <div className="border-t border-cream-300" />
                   <button onClick={handleSignOut}
                     className="flex items-center gap-2 px-4 py-3 text-[12px] text-red-500 hover:bg-red-50 transition-colors w-full text-left">
