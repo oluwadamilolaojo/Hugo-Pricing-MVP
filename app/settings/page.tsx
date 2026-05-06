@@ -2,7 +2,7 @@
 export const dynamic = 'force-dynamic'
 import { useState, useEffect } from 'react'
 import Nav from '@/components/Nav'
-import AuthGuard from '@/components/AuthGuard'
+import { AdminGuard } from '@/components/AuthGuard'
 import { loadAssumptions, saveAssumptions, DEFAULT_ASSUMPTIONS } from '@/lib/assumptions'
 import type { Assumptions } from '@/lib/types'
 
@@ -69,7 +69,7 @@ export default function SettingsPage() {
   if(!a) return <div className="min-h-screen bg-cream-100 flex items-center justify-center"><span className="font-serif text-xl text-hugo-black">Loading…</span></div>
 
   return (
-    <AuthGuard>
+    <AdminGuard>
     <div className="min-h-screen bg-cream-100">
       <Nav />
       <div className="max-w-2xl mx-auto px-6 py-8">
@@ -247,6 +247,6 @@ export default function SettingsPage() {
         </div>
       </div>
     </div>
-    </AuthGuard>
+    </AdminGuard>
   )
 }
