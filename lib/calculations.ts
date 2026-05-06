@@ -11,18 +11,28 @@ export function getBillingHours(inputs: DealInputs, a: Assumptions): number {
 export function getFloorRate(inputs: DealInputs, a: Assumptions): number {
   const geo = inputs.geography
   const svc = inputs.serviceType
-  if (geo === 'Nigeria') return a.floorRates.Nigeria[svc] ?? 12
-  if (geo === 'South Africa') {
+
+  // Base floor rate from assumptions (calibrated for scheduled hours)
+  let baseFloor: number
+  if (geo === 'Nigeria') {
+    baseFloor = a.floorRates.Nigeria[svc] ?? 12
+  } else if (geo === 'South Africa') {
     const saMap: Record<string, string> = {
       'Voice CX': 'Voice CX', 'Non-Voice CX': 'Non-Voice CX',
       'Back Office Standard': 'Back Office Standard',
       'Back Office Specialized T1': 'Back Office Specialized T1',
     }
-    return a.floorRates['South Africa'][saMap[svc] ?? 'Non-Voice CX'] ?? 14
+    baseFloor = a.floorRates['South Africa'][saMap[svc] ?? 'Non-Voice CX'] ?? 14
+  } else {
+    const usKey = svc === 'Voice CX' ? 'Voice CX' : 'Non-Voice CX'
+    baseFloor = a.floorRates['United States'][usKey] ?? 35
   }
-  // US — map service type to US keys
-  const usKey = svc === 'Voice CX' ? 'Voice CX' : 'Non-Voice CX'
-  return a.floorRates['United States'][usKey] ?? 35
+
+  // Adjust floor rate upward for productive hour models
+  // Fewer billable hours = higher rate needed to protect the same margin
+  const scheduledHrs = getBillingHours({ ...inputs, commercialModel: 'Cost per Scheduled Hour' }, a)
+  const actualHrs = getBillingHours(inputs, a)
+  return baseFloor * (scheduledHrs / actualHrs)
 }
 
 export function getMarginFloor(geo: Geography, a: Assumptions): number {
