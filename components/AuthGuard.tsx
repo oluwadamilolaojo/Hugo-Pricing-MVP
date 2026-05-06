@@ -18,10 +18,8 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   if (loading) {
     return (
       <div className="min-h-screen bg-cream-100 flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-10 h-10 rounded-xl bg-hugo-black flex items-center justify-center">
-            <span className="font-serif text-hugo-yellow font-bold text-base">H</span>
-          </div>
+        <div className="flex flex-col items-center gap-3">
+          <span className="font-serif text-[28px] text-hugo-gold">hugo</span>
           <div className="text-[12px] text-hugo-muted">Loading…</div>
         </div>
       </div>

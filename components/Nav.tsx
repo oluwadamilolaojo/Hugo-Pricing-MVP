@@ -24,10 +24,7 @@ export default function Nav() {
       <div className="max-w-screen-2xl mx-auto px-6">
         <div className="flex items-center justify-between h-14">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-hugo-black flex items-center justify-center">
-              <span className="font-serif text-hugo-yellow font-bold text-sm">H</span>
-            </div>
-            <span className="font-sans font-medium text-hugo-black tracking-tight">hugo</span>
+            <span className="font-serif text-[20px] text-hugo-gold tracking-tight">hugo</span>
             <span className="text-[9px] font-bold uppercase tracking-widest bg-hugo-black text-cream-100 px-2 py-0.5 rounded-full">
               internal pricing
             </span>
