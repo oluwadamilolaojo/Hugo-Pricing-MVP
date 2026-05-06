@@ -53,10 +53,7 @@ export default function LoginPage() {
       <div className="w-full max-w-sm">
         {/* Logo */}
         <div className="flex flex-col items-center mb-10">
-          <div className="w-14 h-14 rounded-2xl bg-hugo-black flex items-center justify-center mb-4 shadow-lg">
-            <span className="font-serif text-hugo-yellow font-bold text-2xl">H</span>
-          </div>
-          <h1 className="font-serif text-[28px] text-hugo-black leading-tight text-center">hugo</h1>
+          <h1 className="font-serif text-[42px] text-hugo-gold leading-tight text-center">hugo</h1>
           <span className="text-[10px] font-bold uppercase tracking-widest bg-hugo-black text-cream-100 px-3 py-1 rounded-full mt-2">
             internal pricing
           </span>

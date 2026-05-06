@@ -153,6 +153,8 @@ export default function Calculator() {
   const proposedPL = useMemo(() => assumptions ? calculatePL(inputs, assumptions, 'proposed') : null, [inputs, assumptions])
   const floorRate  = useMemo(() => assumptions ? getFloorRate(inputs, assumptions) : 0, [inputs, assumptions])
   const isInv = proposedPL?.investmentCaseRequired
+  // Second flag: below floor rate but margin is still OK — amber warning
+  const isBelowFloor = !isInv && floorPL && proposedPL && inputs.proposedRate < floorPL.floorRate
 
   const handleSubmit = async () => {
     if (!floorPL || !proposedPL || !assumptions) return
@@ -335,6 +337,22 @@ export default function Calculator() {
                 </div>
               )}
 
+              {/* Amber flag: below floor rate but margin is still acceptable */}
+              {isBelowFloor && (
+                <div className="mt-1 bg-amber-950/20 border border-amber-600/30 rounded-xl p-4">
+                  <div className="text-[11px] font-bold text-amber-400 mb-1">Below Floor Rate — Committee Discussion Required</div>
+                  <div className="text-[10px] text-amber-400/70 mb-3">
+                    Proposed rate ({fmt(inputs.proposedRate)}/hr) is below the floor rate ({fmt(floorPL!.floorRate)}/hr) for this deal type.
+                    Gross margin ({fmt(proposedPL!.grossMarginPct, 'pct')}) is within threshold, but pricing below floor still requires
+                    a brief discussion with the deal approval committee before submission.
+                  </div>
+                  <div className="field-label text-amber-400">Brief justification *</div>
+                  <textarea rows={2} className="hugo-input resize-none text-[11px]"
+                    placeholder="Why is the rate below floor? (e.g. strategic account, volume commitment, competitive displacement…)"
+                    value={investmentNotes} onChange={e => setInvestmentNotes(e.target.value)} />
+                </div>
+              )}
+
               {/* Fix 4: Advanced pricing — collapsed */}
               <AdvancedSection label="Advanced — revenue reduction, FX, one-off costs">
                 <div className="grid grid-cols-2 gap-2.5">
@@ -397,7 +415,7 @@ export default function Calculator() {
               {/* Submit */}
               <div className="mt-5 pt-4 border-t border-cream-300">
                 <button onClick={handleSubmit}
-                  disabled={submitting || !inputs.clientName || !inputs.salesperson || !inputs.salespersonEmail || (!!isInv && !investmentNotes.trim())}
+                  disabled={submitting || !inputs.clientName || !inputs.salesperson || !inputs.salespersonEmail || ((!!isInv || !!isBelowFloor) && !investmentNotes.trim())}
                   className="btn-submit disabled:opacity-40 disabled:cursor-not-allowed">
                   {submitting ? 'Submitting…' : 'Submit for approval →'}
                 </button>
@@ -406,8 +424,8 @@ export default function Calculator() {
                     Open &ldquo;Deal details&rdquo; above to add client name, salesperson and email before submitting.
                   </p>
                 )}
-                {isInv && !investmentNotes.trim() && (
-                  <p className="text-[10px] text-red-400 text-center mt-2">Investment case justification required.</p>
+                {(isInv || isBelowFloor) && !investmentNotes.trim() && (
+                  <p className="text-[10px] text-amber-400 text-center mt-2">Justification required before submission.</p>
                 )}
                 {/* Fix 3: Show auto-save status */}
                 <p className="text-[9px] text-hugo-muted text-center mt-2">
@@ -425,10 +443,10 @@ export default function Calculator() {
                 <div className="bg-cream-50 border border-cream-300 rounded-2xl p-4">
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     {[
-                      { label: 'Floor rate', val: fmt(floorPL.floorRate), sub: 'Minimum', cls: 'text-amber-700' },
                       { label: 'Proposed rate', val: fmt(inputs.proposedRate), sub: inputs.proposedRate < floorPL.floorRate ? 'Below floor ⚠' : 'Your rate', cls: inputs.proposedRate < floorPL.floorRate ? 'text-red-600' : 'text-hugo-black' },
-                      { label: 'Floor GM', val: fmt(floorPL.grossMarginPct, 'pct'), sub: `Floor: ${fmt(floorPL.marginFloor, 'pct')}`, cls: floorPL.investmentCaseRequired ? 'text-red-600' : 'text-emerald-700' },
+                      { label: 'Floor rate', val: fmt(floorPL.floorRate), sub: 'Minimum', cls: 'text-amber-700' },
                       { label: 'Proposed GM', val: fmt(proposedPL.grossMarginPct, 'pct'), sub: `Floor: ${fmt(proposedPL.marginFloor, 'pct')}`, cls: proposedPL.investmentCaseRequired ? 'text-red-600' : 'text-emerald-700' },
+                      { label: 'Floor GM', val: fmt(floorPL.grossMarginPct, 'pct'), sub: `Floor: ${fmt(floorPL.marginFloor, 'pct')}`, cls: floorPL.investmentCaseRequired ? 'text-red-600' : 'text-emerald-700' },
                     ].map(item => (
                       <div key={item.label} className={`rounded-xl p-3 text-center border ${item.cls.includes('red') ? 'bg-red-50 border-red-200' : item.cls.includes('emerald') ? 'bg-emerald-50 border-emerald-200' : item.cls.includes('amber') ? 'bg-amber-50 border-amber-200' : 'bg-cream-100 border-cream-300'}`}>
                         <div className="text-[10px] text-hugo-muted mb-0.5">{item.label}</div>
@@ -441,8 +459,8 @@ export default function Calculator() {
 
                 {/* Dual P&L panels */}
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-4" style={{ minHeight: '600px' }}>
-                  <PLPanel result={floorPL} inputs={inputs} mode="floor" />
                   <PLPanel result={proposedPL} inputs={inputs} mode="proposed" />
+                  <PLPanel result={floorPL} inputs={inputs} mode="floor" />
                 </div>
               </>
             )}
