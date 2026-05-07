@@ -304,8 +304,8 @@ export default function Calculator() {
                   Clients often specify QA and TL ratios. For small deals (&lt;5 agents) use a dedicated TL ratio of 5:1.
                 </div>
                 <div className="grid grid-cols-2 gap-2.5">
-                  <NumField label="QA : Agent ratio" value={inputs.qaAgentRatio} onChange={v => set('qaAgentRatio', v)} min={1} />
-                  <NumField label="TL : Agent ratio" value={inputs.tlAgentRatio} onChange={v => set('tlAgentRatio', v)} min={1} />
+                  <NumField label="Agents per QA" value={inputs.qaAgentRatio} onChange={v => set('qaAgentRatio', v)} min={1} />
+                  <NumField label="Agents per TL" value={inputs.tlAgentRatio} onChange={v => set('tlAgentRatio', v)} min={1} />
                   <NumField label="Agent buffers" value={inputs.agentBuffers} onChange={v => set('agentBuffers', v)} min={0} />
                   <NumField label="QA buffers" value={inputs.qaBuffers} onChange={v => set('qaBuffers', v)} min={0} />
                   <NumField label="TL buffers" value={inputs.tlBuffers} onChange={v => set('tlBuffers', v)} min={0} />
