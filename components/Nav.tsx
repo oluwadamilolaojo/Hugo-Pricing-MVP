@@ -37,7 +37,8 @@ export default function Nav() {
           <div className="flex items-center gap-1">
             {[
               { href: '/calculator', label: 'Calculator' },
-              { href: '/deals',      label: 'Deal Log' },
+              { href: '/deals',    label: 'Deal Log' },
+              { href: '/feedback', label: 'Feedback' },
             ].map(({ href, label }) => (
               <Link key={href} href={href}
                 className={`px-4 py-2 rounded-chip text-[12px] font-medium transition-all ${

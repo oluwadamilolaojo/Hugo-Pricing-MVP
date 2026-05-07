@@ -88,3 +88,39 @@ export function downloadCSV(content: string, filename: string): void {
   a.href = url; a.download = filename; a.click()
   URL.revokeObjectURL(url)
 }
+// ── FEEDBACK LOG ─────────────────────────────────────────────────────────────
+const FEEDBACK_KEY = 'hugo_feedback'
+
+export interface FeedbackEntry {
+  id: string
+  submittedBy: string
+  submittedByEmail: string
+  submittedAt: string
+  category: 'general' | 'bug' | 'calculation' | 'ux' | 'feature'
+  feedback: string
+  dealRef?: string
+}
+
+export function getFeedback(): FeedbackEntry[] {
+  if (typeof window === 'undefined') return []
+  try { return JSON.parse(localStorage.getItem(FEEDBACK_KEY) || '[]') }
+  catch { return [] }
+}
+
+export function saveFeedback(entry: FeedbackEntry): void {
+  const all = getFeedback().filter(f => f.id !== entry.id)
+  all.unshift(entry)
+  localStorage.setItem(FEEDBACK_KEY, JSON.stringify(all))
+}
+
+export function feedbackToCSV(entries: FeedbackEntry[]): string {
+  const headers = ['ID', 'Submitted By', 'Email', 'Date', 'Category', 'Deal Ref', 'Feedback']
+  const rows = entries.map(e => [
+    e.id, e.submittedBy, e.submittedByEmail,
+    new Date(e.submittedAt).toLocaleDateString('en-GB'),
+    e.category, e.dealRef || '', e.feedback
+  ])
+  return [headers, ...rows]
+    .map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(','))
+    .join('\n')
+}
