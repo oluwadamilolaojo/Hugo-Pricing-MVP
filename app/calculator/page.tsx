@@ -18,6 +18,14 @@ const COMPLEXITY_DESCRIPTIONS: Record<string, string> = {
   Intermediate: 'Voice CX (any voice project qualifies — agents speak directly with clients), or non-voice with multiple workstreams, multiple stakeholders, or specialist domain context. Examples: healthcare admin, insurance processing, anything where domain knowledge affects quality. Confirm this tier with delivery lead before submitting.',
   High: 'Voice CX in a highly specialised field, or any project requiring professional credentials or technical skills. Examples: Aurora (requires architects), tier 3 developer support (agents must read and apply code), licensed professionals, highly regulated work. If you have to ask whether someone is qualified — it\'s High.',
 }
+const SERVICE_DESCRIPTIONS: Record<string, string> = {
+  'Non-Voice CX': 'Customer-facing support via email, chat, social or SMS. Agents never speak to clients directly. Most common Hugo service type. Standard onboarding, no specialist knowledge required.',
+  'Voice CX': 'Customer-facing support over the phone. Agents speak directly with end customers in real time. Automatically Intermediate complexity minimum — tone, judgement and live communication skills matter.',
+  'Back Office Standard': 'Processing and operational work with no direct client contact. Data entry, document processing, order fulfilment, basic claims handling. Graduate-level, standard onboarding, no domain expertise required.',
+  'Back Office Specialized T1': 'Back office work requiring meaningful domain context — not just following a process but understanding the field. Examples: healthcare admin, insurance processing, financial services data work.',
+  'Back Office Specialized T2': 'Higher-stakes back office where errors have regulatory, financial or reputational consequences. Agents need demonstrable domain expertise. Requires delivery lead sign-off on team background before pricing.',
+  'Back Office Specialized T3': 'Requires professional credentials, technical skills or specialist knowledge applied independently. Examples: Aurora (architectural review), tier 3 developer support (agents read and apply code), licensed professionals. Do not price without speaking to Gareth or Taire first.',
+}
 const DEFAULT_INPUTS: DealInputs = {
   clientName: '', salesperson: '', salespersonEmail: '',
   dateOfPricing: new Date().toISOString().split('T')[0],
