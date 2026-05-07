@@ -267,6 +267,7 @@ export default function Calculator() {
                   </button>
                 ))}
               </div>
+              {inputs.serviceType && <p className="text-[10px] text-hugo-muted italic mt-1.5 leading-relaxed">{SERVICE_DESCRIPTIONS[inputs.serviceType]}</p>}
 
               {/* 3. Commercial model */}
               <SecLabel n="3" label="Commercial model" />
