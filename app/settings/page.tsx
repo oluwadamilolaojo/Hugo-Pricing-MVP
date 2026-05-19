@@ -137,6 +137,17 @@ export default function SettingsPage() {
             ))}
           </Section>
 
+          <Section title="C. Nigeria AI Ops — role costs (NGN/month)">
+            <PendingNote text="⚠ Pending Taire + Kiran. AI Ops agents command a premium over CX. Validate against actual AI Ops payroll before go-live." />
+            <div className="grid grid-cols-2 gap-4">
+              {Object.entries(a.ngAO).map(([key, val]) => (
+                <Field key={key} label={key}>
+                  <NumInput value={val as number} onChange={v => update(['ngAO', key], v)} step={1000} />
+                </Field>
+              ))}
+            </div>
+          </Section>
+          
           <Section title="B. Nigeria CX — role costs (NGN/month)">
             <div className="grid grid-cols-2 gap-4">
               {Object.entries(a.ngCX).filter(([k])=>!k.includes('USD')).map(([key,val])=>(
