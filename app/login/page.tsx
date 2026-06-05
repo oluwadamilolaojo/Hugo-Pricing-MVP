@@ -3,80 +3,45 @@ export const dynamic = 'force-dynamic'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/AuthContext'
-
 export default function LoginPage() {
   const { user, loading } = useAuth()
   const router = useRouter()
   const [signingIn, setSigningIn] = useState(false)
   const [error, setError] = useState('')
-
-  useEffect(() => {
-    if (!loading && user) {
-      router.replace('/calculator')
-    }
-  }, [user, loading, router])
-
+  useEffect(() => { if (!loading && user) router.replace('/calculator') }, [user, loading, router])
   const handleGoogleSignIn = async () => {
-    setSigningIn(true)
-    setError('')
+    setSigningIn(true); setError('')
     try {
       const { signInWithPopup } = await import('firebase/auth')
       const { getFirebaseAuth, getGoogleProvider } = await import('@/lib/firebase')
       const result = await signInWithPopup(getFirebaseAuth(), getGoogleProvider())
-      const email = result.user.email ?? ''
-
-      if (!email.endsWith('@hugotech.co')) {
-        const { getFirebaseAuth: getAuth2 } = await import('@/lib/firebase')
-        await getAuth2().signOut()
+      if (!result.user.email?.endsWith('@hugotech.co')) {
+        const { getFirebaseAuth: a } = await import('@/lib/firebase')
+        await a().signOut()
         setError('Access restricted to @hugotech.co accounts only.')
-        setSigningIn(false)
-        return
+        setSigningIn(false); return
       }
       router.replace('/calculator')
     } catch (err: unknown) {
       const code = (err as { code?: string }).code
-      if (code === 'auth/popup-closed-by-user') {
-        setError('')
-      } else if (code === 'auth/unauthorized-domain') {
-        setError('This domain is not authorised in Firebase. Contact your admin.')
-      } else {
-        setError('Sign-in failed. Please try again.')
-      }
+      if (code !== 'auth/popup-closed-by-user') setError('Sign-in failed. Please try again.')
       setSigningIn(false)
     }
   }
-
   if (loading) return null
-
   return (
     <div className="min-h-screen bg-cream-100 flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
-        {/* Logo */}
         <div className="flex flex-col items-center mb-10">
           <h1 className="font-serif text-[42px] text-hugo-gold leading-tight text-center">hugo</h1>
-          <span className="text-[10px] font-bold uppercase tracking-widest bg-hugo-black text-cream-100 px-3 py-1 rounded-full mt-2">
-            internal pricing
-          </span>
+          <span className="text-[10px] font-bold uppercase tracking-widest bg-hugo-black text-cream-100 px-3 py-1 rounded-full mt-2">internal pricing</span>
         </div>
-
-        {/* Card */}
         <div className="bg-cream-50 border border-cream-300 rounded-2xl p-8 shadow-sm">
           <h2 className="font-serif text-[22px] text-hugo-black mb-1">Sign in</h2>
-          <p className="text-[12px] text-hugo-muted mb-7">
-            Use your Hugo Google account to access the pricing calculator.
-          </p>
-
-          {error && (
-            <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 mb-5">
-              <p className="text-[11px] text-red-600">{error}</p>
-            </div>
-          )}
-
-          <button
-            onClick={handleGoogleSignIn}
-            disabled={signingIn}
-            className="w-full flex items-center justify-center gap-3 bg-white border border-cream-300 rounded-xl px-4 py-3.5 text-[13px] font-medium text-hugo-black hover:bg-cream-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
-          >
+          <p className="text-[12px] text-hugo-muted mb-7">Use your Hugo Google account to access the pricing calculator.</p>
+          {error && <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 mb-5"><p className="text-[11px] text-red-600">{error}</p></div>}
+          <button onClick={handleGoogleSignIn} disabled={signingIn}
+            className="w-full flex items-center justify-center gap-3 bg-white border border-cream-300 rounded-xl px-4 py-3.5 text-[13px] font-medium text-hugo-black hover:bg-cream-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm">
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
               <path d="M17.64 9.205c0-.639-.057-1.252-.164-1.841H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/>
               <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/>
@@ -85,15 +50,8 @@ export default function LoginPage() {
             </svg>
             {signingIn ? 'Signing in...' : 'Sign in with Google'}
           </button>
-
-          <p className="text-[10px] text-hugo-muted text-center mt-5">
-            Restricted to <span className="font-semibold">@hugotech.co</span> accounts only
-          </p>
+          <p className="text-[10px] text-hugo-muted text-center mt-5">Restricted to <span className="font-semibold">@hugotech.co</span> accounts only</p>
         </div>
-
-        <p className="text-[10px] text-hugo-muted text-center mt-6">
-          Hugo Pricing Calculator · Internal use only
-        </p>
       </div>
     </div>
   )

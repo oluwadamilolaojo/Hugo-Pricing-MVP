@@ -3,8 +3,8 @@ export const dynamic = 'force-dynamic'
 import { useState, useEffect } from 'react'
 import Nav from '@/components/Nav'
 import AuthGuard from '@/components/AuthGuard'
-import { useAuth } from '@/lib/AuthContext'
 import { getFeedback, saveFeedback, feedbackToCSV, downloadCSV, type FeedbackEntry } from '@/lib/storage'
+import { useAuth } from '@/lib/AuthContext'
 import { v4 as uuid } from 'uuid'
 
 const CATEGORIES: { value: FeedbackEntry['category']; label: string }[] = [
@@ -13,6 +13,7 @@ const CATEGORIES: { value: FeedbackEntry['category']; label: string }[] = [
   { value: 'bug',         label: 'Bug / error' },
   { value: 'ux',          label: 'Usability' },
   { value: 'feature',     label: 'Feature request' },
+  { value: 'assumptions', label: 'Assumptions' },
 ]
 
 const CAT_COLORS: Record<FeedbackEntry['category'], string> = {
@@ -21,6 +22,7 @@ const CAT_COLORS: Record<FeedbackEntry['category'], string> = {
   bug:         'bg-orange-100 text-orange-700',
   ux:          'bg-blue-100 text-blue-700',
   feature:     'bg-emerald-100 text-emerald-700',
+  assumptions: 'bg-purple-100 text-purple-700',
 }
 
 export default function FeedbackPage() {
@@ -39,7 +41,7 @@ export default function FeedbackPage() {
   const handleSubmit = () => {
     if (!text.trim()) return
     const entry: FeedbackEntry = {
-      id: uuid(),
+      id:               uuid(),
       submittedBy:      user?.displayName || user?.email || 'Unknown',
       submittedByEmail: user?.email || '',
       submittedAt:      new Date().toISOString(),
@@ -65,10 +67,9 @@ export default function FeedbackPage() {
     return true
   })
 
-  const exportAll = () => {
-    const toExport = filtered.length > 0 ? filtered : entries
-    downloadCSV(feedbackToCSV(toExport), `hugo-feedback-${new Date().toISOString().split('T')[0]}.csv`)
-  }
+  const exportAll = () =>
+    downloadCSV(feedbackToCSV(filtered.length > 0 ? filtered : entries),
+      `hugo-feedback-${new Date().toISOString().split('T')[0]}.csv`)
 
   return (
     <AuthGuard>
@@ -76,7 +77,6 @@ export default function FeedbackPage() {
       <Nav />
       <div className="max-w-screen-xl mx-auto px-6 py-8">
 
-        {/* Header */}
         <div className="flex items-end justify-between mb-8">
           <div>
             <h1 className="font-serif text-[32px] text-hugo-black leading-tight">Feedback Log</h1>
@@ -93,12 +93,11 @@ export default function FeedbackPage() {
 
           {submitted && (
             <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm rounded-xl px-4 py-2.5 mb-4 font-medium">
-              Thank you — feedback submitted.
+              Feedback submitted.
             </div>
           )}
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
-            {/* Category */}
             <div>
               <div className="field-label">Category</div>
               <select className="hugo-select" value={category}
@@ -108,42 +107,30 @@ export default function FeedbackPage() {
                 ))}
               </select>
             </div>
-
-            {/* Deal ref (optional) */}
             <div>
               <div className="field-label">Deal reference (optional)</div>
               <input className="hugo-input" value={dealRef}
                 onChange={e => setDealRef(e.target.value)}
                 placeholder="Deal ID or client name" />
             </div>
-
-            {/* Submitter — read only from auth */}
             <div>
               <div className="field-label">Submitted by</div>
-              <div className="hugo-input bg-cream-100 text-hugo-muted cursor-not-allowed">
+              <div className="hugo-input bg-cream-100 text-hugo-muted cursor-not-allowed select-none">
                 {user?.displayName || user?.email || '—'}
               </div>
             </div>
           </div>
 
-          {/* Feedback text */}
           <div className="mb-4">
             <div className="field-label">Feedback *</div>
-            <textarea
-              rows={4}
-              className="hugo-input resize-none"
+            <textarea rows={4} className="hugo-input resize-none"
               placeholder="Describe what you noticed, what was confusing, what could be better, or what is missing…"
-              value={text}
-              onChange={e => setText(e.target.value)}
-            />
+              value={text} onChange={e => setText(e.target.value)} />
           </div>
 
-          <button
-            onClick={handleSubmit}
-            disabled={!text.trim()}
-            className="btn-submit w-auto px-8 disabled:opacity-40 disabled:cursor-not-allowed"
-            style={{ width: 'auto' }}
-          >
+          <button onClick={handleSubmit} disabled={!text.trim()}
+            className="btn-submit disabled:opacity-40 disabled:cursor-not-allowed"
+            style={{ width: 'auto', paddingLeft: '2rem', paddingRight: '2rem' }}>
             Submit feedback →
           </button>
         </div>
@@ -152,7 +139,7 @@ export default function FeedbackPage() {
         <div className="bg-cream-50 border border-cream-300 rounded-2xl p-4 mb-5 flex flex-wrap gap-3 items-center">
           <input className="hugo-input w-52" placeholder="Search feedback…"
             value={search} onChange={e => setSearch(e.target.value)} />
-          <select className="hugo-select w-44" value={filterCat}
+          <select className="hugo-select w-48" value={filterCat}
             onChange={e => setFilterCat(e.target.value)}>
             <option value="all">All categories</option>
             {CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
@@ -165,7 +152,7 @@ export default function FeedbackPage() {
           {filtered.length === 0 ? (
             <div className="py-20 text-center">
               <div className="font-serif text-hugo-black text-xl mb-2">No feedback yet</div>
-              <div className="text-[12px] text-hugo-muted">Be the first — use the form above.</div>
+              <div className="text-[12px] text-hugo-muted">Use the form above to submit the first entry.</div>
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -191,12 +178,8 @@ export default function FeedbackPage() {
                           {CATEGORIES.find(c => c.value === e.category)?.label}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-[11px] text-hugo-muted font-mono">
-                        {e.dealRef || '—'}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-hugo-black max-w-xl">
-                        {e.feedback}
-                      </td>
+                      <td className="px-4 py-3 text-[11px] text-hugo-muted font-mono">{e.dealRef || '—'}</td>
+                      <td className="px-4 py-3 text-sm text-hugo-black max-w-xl">{e.feedback}</td>
                     </tr>
                   ))}
                 </tbody>
