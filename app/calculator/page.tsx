@@ -16,6 +16,15 @@ const COMPLEXITY_DESCRIPTIONS: Record<string, string> = {
   Intermediate: 'Voice CX (any voice project qualifies — agents speak directly with clients), or non-voice with multiple workstreams, multiple stakeholders, or specialist domain context. Examples: healthcare admin, insurance processing, anything where domain knowledge affects quality. Confirm this tier with delivery lead before submitting.',
   High: 'Voice CX in a highly specialised field, or any project requiring professional credentials or technical skills. Examples: Aurora (requires architects), tier 3 developer support (agents must read and apply code), licensed professionals, highly regulated work. If you have to ask whether someone is qualified — it\'s High.',
 }
+const SERVICE_DESCRIPTIONS: Record<string, string> = {
+  'Non-Voice CX': 'Customer-facing support via email, chat, social or SMS. Agents never speak to clients directly. Most common Hugo service type. Standard onboarding, no specialist knowledge required.',
+  'Voice CX': 'Customer-facing support over the phone. Agents speak directly with end customers in real time. Automatically Intermediate complexity minimum — tone, judgement and live communication skills matter.',
+  'Back Office Standard': 'Processing and operational work with no direct client contact. Data entry, document processing, order fulfilment, basic claims handling. Graduate-level, standard onboarding, no domain expertise required.',
+  'Back Office Specialized T1': 'Back office requiring meaningful domain context — not just following a process but understanding the field. Examples: healthcare admin, insurance processing, financial services data work.',
+  'Back Office Specialized T2': 'Higher-stakes back office where errors have regulatory, financial or reputational consequences. Agents need demonstrable domain expertise. Requires delivery lead sign-off on team background before pricing.',
+  'Back Office Specialized T3': 'Requires professional credentials, technical skills or specialist knowledge applied independently. Examples: Aurora (architectural review), tier 3 developer support (agents read and apply code), licensed professionals. Do not price without speaking to Gareth or Taire first.',
+}
+
 const DEFAULT_INPUTS: DealInputs = {
   clientName: '', salesperson: '', salespersonEmail: '',
   dateOfPricing: new Date().toISOString().split('T')[0],
@@ -151,6 +160,7 @@ export default function Calculator() {
   const proposedPL = useMemo(() => assumptions ? calculatePL(inputs, assumptions, 'proposed') : null, [inputs, assumptions])
   const floorRate  = useMemo(() => assumptions ? getFloorRate(inputs, assumptions) : 0, [inputs, assumptions])
   const isInv = proposedPL?.investmentCaseRequired
+  const isBelowFloor = !isInv && floorPL && proposedPL && inputs.proposedRate < floorPL.floorRate
 
   const handleSubmit = async () => {
     if (!floorPL || !proposedPL || !assumptions) return
@@ -254,6 +264,7 @@ export default function Calculator() {
                   </button>
                 ))}
               </div>
+              {inputs.serviceType && <p className="text-[10px] text-hugo-muted italic mt-1.5 leading-relaxed">{SERVICE_DESCRIPTIONS[inputs.serviceType]}</p>}
 
               {/* 3. Commercial model */}
               <SecLabel n="3" label="Commercial model" />
@@ -290,8 +301,8 @@ export default function Calculator() {
                   Clients often specify QA and TL ratios. For small deals (&lt;5 agents) use a dedicated TL ratio of 5:1.
                 </div>
                 <div className="grid grid-cols-2 gap-2.5">
-                  <NumField label="QA : Agent ratio" value={inputs.qaAgentRatio} onChange={v => set('qaAgentRatio', v)} min={1} />
-                  <NumField label="TL : Agent ratio" value={inputs.tlAgentRatio} onChange={v => set('tlAgentRatio', v)} min={1} />
+                  <NumField label="Agents per QA" value={inputs.qaAgentRatio} onChange={v => set('qaAgentRatio', v)} min={1} />
+                  <NumField label="Agents per TL" value={inputs.tlAgentRatio} onChange={v => set('tlAgentRatio', v)} min={1} />
                   <NumField label="Agent buffers" value={inputs.agentBuffers} onChange={v => set('agentBuffers', v)} min={0} />
                   <NumField label="QA buffers" value={inputs.qaBuffers} onChange={v => set('qaBuffers', v)} min={0} />
                   <NumField label="TL buffers" value={inputs.tlBuffers} onChange={v => set('tlBuffers', v)} min={0} />
@@ -328,6 +339,21 @@ export default function Calculator() {
                   <div className="field-label text-red-400">Justification *</div>
                   <textarea rows={2} className="hugo-input resize-none text-[11px]"
                     placeholder="Strategic rationale, growth potential, volume commitment…"
+                    value={investmentNotes} onChange={e => setInvestmentNotes(e.target.value)} />
+                </div>
+              )}
+
+              {isBelowFloor && (
+                <div className="mt-1 bg-amber-950/20 border border-amber-600/30 rounded-xl p-4">
+                  <div className="text-[11px] font-bold text-amber-400 mb-1">Below Floor Rate — Committee Discussion Required</div>
+                  <div className="text-[10px] text-amber-400/70 mb-3">
+                    Proposed rate ({fmt(inputs.proposedRate)}/hr) is below the floor rate ({fmt(floorPL!.floorRate)}/hr).
+                    Gross margin ({fmt(proposedPL!.grossMarginPct, 'pct')}) is within threshold, but pricing below floor still requires
+                    a brief discussion with the deal approval committee before submission.
+                  </div>
+                  <div className="field-label text-amber-400">Brief justification *</div>
+                  <textarea rows={2} className="hugo-input resize-none text-[11px]"
+                    placeholder="Why is the rate below floor? e.g. strategic account, volume commitment, competitive displacement..."
                     value={investmentNotes} onChange={e => setInvestmentNotes(e.target.value)} />
                 </div>
               )}
@@ -394,7 +420,7 @@ export default function Calculator() {
               {/* Submit */}
               <div className="mt-5 pt-4 border-t border-cream-300">
                 <button onClick={handleSubmit}
-                  disabled={submitting || !inputs.clientName || !inputs.salesperson || !inputs.salespersonEmail || (!!isInv && !investmentNotes.trim())}
+                  disabled={submitting || !inputs.clientName || !inputs.salesperson || !inputs.salespersonEmail || ((!!isInv || !!isBelowFloor) && !investmentNotes.trim())}
                   className="btn-submit disabled:opacity-40 disabled:cursor-not-allowed">
                   {submitting ? 'Submitting…' : 'Submit for approval →'}
                 </button>
