@@ -28,7 +28,6 @@ export default function PLPanel({ result: r, inputs, mode }: Props) {
 
   const isInv = r.investmentCaseRequired
   const rate = mode === 'floor' ? r.floorRate : inputs.proposedRate
-  const isBelowFloor = !isInv && mode === 'proposed' && rate < r.floorRate
 
   return (
     <div className="flex flex-col bg-hugo-panel text-cream-100 rounded-xl overflow-hidden h-full">
@@ -39,8 +38,8 @@ export default function PLPanel({ result: r, inputs, mode }: Props) {
           <span className="text-[9px] font-bold uppercase tracking-[0.18em] text-hugo-yellow">
             {mode === 'floor' ? 'Floor Rate P&L' : 'Proposed Rate P&L'}
           </span>
-          <span className={isInv ? 'status-bad' : isBelowFloor ? 'status-pending' : 'status-ok'}>
-            {isInv ? 'Investment case required' : isBelowFloor ? 'Below floor rate — discuss' : 'Within parameters'}
+          <span className={isInv ? 'status-bad' : 'status-ok'}>
+            {isInv ? 'Investment case required' : 'Within parameters'}
           </span>
         </div>
         <div className="flex items-baseline gap-2">
@@ -51,18 +50,18 @@ export default function PLPanel({ result: r, inputs, mode }: Props) {
 
       {/* Fix 5: Gross margin FIRST — most important number at the top */}
       <div className="px-5 py-4 border-b border-hugo-border">
-        <div className={`rounded-xl px-4 py-3.5 flex justify-between items-center ${isInv ? 'bg-red-950/40 border border-red-800/30' : isBelowFloor ? 'bg-amber-950/30 border border-amber-600/30' : 'bg-[#2A240A] border border-hugo-yellow/30'}`}>
+        <div className={`rounded-xl px-4 py-3.5 flex justify-between items-center ${isInv ? 'bg-red-950/40 border border-red-800/30' : 'bg-[#2A240A] border border-hugo-yellow/30'}`}>
           <div>
-            <div className={`text-[9px] font-bold uppercase tracking-[0.14em] mb-1 ${isInv ? 'text-red-400' : isBelowFloor ? 'text-amber-400' : 'text-hugo-yellow'}`}>Gross Margin</div>
-            <div className={`text-[11px] ${isInv ? 'text-red-400/70' : isBelowFloor ? 'text-amber-400/70' : 'text-amber-400/70'}`}>
-              Floor: {fmt(r.marginFloor, 'pct')} · {isInv ? '⚠ below margin floor' : isBelowFloor ? '⚠ rate below floor' : '✓ above floor'}
+            <div className={`text-[9px] font-bold uppercase tracking-[0.14em] mb-1 ${isInv ? 'text-red-400' : 'text-hugo-yellow'}`}>Gross Margin</div>
+            <div className={`text-[11px] ${isInv ? 'text-red-400/70' : 'text-amber-400/70'}`}>
+              Floor: {fmt(r.marginFloor, 'pct')} · {isInv ? '⚠ below floor' : '✓ above floor'}
             </div>
           </div>
           <div className="text-right">
-            <div className={`font-serif text-[36px] font-bold leading-none ${isInv ? 'text-red-400' : isBelowFloor ? 'text-amber-400' : 'text-hugo-yellow'}`}>
+            <div className={`font-serif text-[36px] font-bold leading-none ${isInv ? 'text-red-400' : 'text-hugo-yellow'}`}>
               {fmt(r.grossMarginPct, 'pct')}
             </div>
-            <div className={`text-[11px] font-serif ${isInv ? 'text-red-500' : isBelowFloor ? 'text-amber-500' : 'text-amber-500'}`}>
+            <div className={`text-[11px] font-serif ${isInv ? 'text-red-500' : 'text-amber-500'}`}>
               {fmt(r.grossMarginUSD)}/hr
             </div>
           </div>

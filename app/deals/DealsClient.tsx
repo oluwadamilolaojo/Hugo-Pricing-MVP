@@ -1,12 +1,8 @@
 'use client'
-export const dynamic = 'force-dynamic'
 import { useState, useEffect, useCallback } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Nav from '@/components/Nav'
-import { useAuth } from '@/lib/AuthContext'
-import AuthGuard from '@/components/AuthGuard'
 import { getDeals, updateDealStatus, dealsToCSV, downloadCSV, checkOverdueDeals } from '@/lib/storage'
-import { isReviewer } from '@/lib/roles'
 import { loadAssumptions } from '@/lib/assumptions'
 import { fmt } from '@/lib/calculations'
 import type { Deal, DealStatus } from '@/lib/types'
@@ -35,34 +31,36 @@ export default function DealsClient() {
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [notifyError, setNotifyError] = useState('')
 
-  const { user } = useAuth()
-  const refresh = useCallback(() => setDeals(getDeals()), [])
+  const refresh = useCallback(async () => setDeals(await getDeals()), [])
 
   useEffect(() => {
-    const a = loadAssumptions()
-    checkOverdueDeals(a.approvalWindowHours)
-    const allDeals = getDeals()
-    setDeals(allDeals)
+    const init = async () => {
+      const a = loadAssumptions()
+      await checkOverdueDeals(a.approvalWindowHours)
+      const allDeals = await getDeals()
+      setDeals(allDeals)
 
-    // Fix 1: Auto-open review modal for deal specified in URL
-    const targetId = searchParams.get('id')
-    if (targetId) {
-      const target = allDeals.find(d => d.id === targetId)
-      if (target) {
-        setExpandedId(targetId)
-        if (target.status === 'pending_review' || target.status === 'overdue') {
-          setReviewingDeal(target)
-          setReviewNotes('')
-          setReviewerName('')
+      // Fix 1: Auto-open review modal for deal specified in URL
+      const targetId = searchParams.get('id')
+      if (targetId) {
+        const target = allDeals.find(d => d.id === targetId)
+        if (target) {
+          setExpandedId(targetId)
+          if (target.status === 'pending_review' || target.status === 'overdue') {
+            setReviewingDeal(target)
+            setReviewNotes('')
+            setReviewerName('')
+          }
         }
+        // Clear the ?id= from URL so refresh doesn't re-open
+        router.replace('/deals', { scroll: false })
       }
-      // Clear the ?id= from URL so refresh doesn't re-open
-      router.replace('/deals', { scroll: false })
     }
+    init()
   }, [searchParams, router])
 
   const handleApprove = async (deal: Deal) => {
-    updateDealStatus(deal.id, 'approved', reviewerName || 'Reviewer', reviewNotes)
+    await updateDealStatus(deal.id, 'approved', reviewerName || 'Reviewer', reviewNotes)
     try {
       await fetch('/api/notify', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -78,7 +76,7 @@ export default function DealsClient() {
 
   const handleReject = async (deal: Deal) => {
     if (!reviewNotes.trim()) { alert('Please provide a reason for rejection.'); return }
-    updateDealStatus(deal.id, 'rejected', reviewerName || 'Reviewer', reviewNotes)
+    await updateDealStatus(deal.id, 'rejected', reviewerName || 'Reviewer', reviewNotes)
     try {
       await fetch('/api/notify', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -115,7 +113,6 @@ export default function DealsClient() {
     setSelectedIds(selectedIds.size === filtered.length ? new Set() : new Set(filtered.map(d => d.id)))
 
   return (
-    <AuthGuard>
     <div className="min-h-screen bg-cream-100">
       <Nav />
 
@@ -212,7 +209,7 @@ export default function DealsClient() {
                           {new Date(deal.submittedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
                         </td>
                         <td className="px-4 py-3">
-                          {(deal.status === 'pending_review' || deal.status === 'overdue') && isReviewer(user?.email) && deal.inputs.salespersonEmail !== user?.email && (
+                          {(deal.status === 'pending_review' || deal.status === 'overdue') && (
                             <button onClick={() => { setReviewingDeal(deal); setReviewNotes(''); setReviewerName('') }}
                               className={`btn-ghost text-[11px] px-3 py-1 ${deal.status === 'overdue' ? 'border-orange-300 text-orange-600' : ''}`}>
                               Review
@@ -323,6 +320,5 @@ export default function DealsClient() {
         </div>
       )}
     </div>
-    </AuthGuard>
   )
 }

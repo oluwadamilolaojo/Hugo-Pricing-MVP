@@ -1,8 +1,6 @@
 'use client'
-export const dynamic = 'force-dynamic'
 import { useState, useEffect } from 'react'
 import Nav from '@/components/Nav'
-import { AdminGuard } from '@/components/AuthGuard'
 import { loadAssumptions, saveAssumptions, DEFAULT_ASSUMPTIONS } from '@/lib/assumptions'
 import type { Assumptions } from '@/lib/types'
 
@@ -69,7 +67,6 @@ export default function SettingsPage() {
   if(!a) return <div className="min-h-screen bg-cream-100 flex items-center justify-center"><span className="font-serif text-xl text-hugo-black">Loading…</span></div>
 
   return (
-    <AdminGuard>
     <div className="min-h-screen bg-cream-100">
       <Nav />
       <div className="max-w-2xl mx-auto px-6 py-8">
@@ -137,17 +134,6 @@ export default function SettingsPage() {
             ))}
           </Section>
 
-          <Section title="C. Nigeria AI Ops — role costs (NGN/month)">
-            <PendingNote text="⚠ Pending Taire + Kiran. AI Ops agents command a premium over CX. Validate against actual AI Ops payroll before go-live." />
-            <div className="grid grid-cols-2 gap-4">
-              {Object.entries(a.ngAO).map(([key, val]) => (
-                <Field key={key} label={key}>
-                  <NumInput value={val as number} onChange={v => update(['ngAO', key], v)} step={1000} />
-                </Field>
-              ))}
-            </div>
-          </Section>
-          
           <Section title="B. Nigeria CX — role costs (NGN/month)">
             <div className="grid grid-cols-2 gap-4">
               {Object.entries(a.ngCX).filter(([k])=>!k.includes('USD')).map(([key,val])=>(
@@ -258,6 +244,5 @@ export default function SettingsPage() {
         </div>
       </div>
     </div>
-    </AdminGuard>
   )
 }

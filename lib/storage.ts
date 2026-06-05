@@ -1,60 +1,95 @@
 // lib/storage.ts
+// Deals → server-side Redis via API routes (shared across all users)
+// Everything else (feedback, audit, draft) → localStorage (per-device, no sharing needed)
+
 import type { Deal, DealStatus } from './types'
 
-const DEALS_KEY = 'hugo_deals'
+// ── DEALS — API-backed (Redis) ────────────────────────────────────────────────
 
-export function getDeals(): Deal[] {
-  if (typeof window === 'undefined') return []
+export async function getDeals(): Promise<Deal[]> {
   try {
-    return JSON.parse(localStorage.getItem(DEALS_KEY) || '[]')
-  } catch { return [] }
-}
-
-export function getDeal(id: string): Deal | null {
-  return getDeals().find(d => d.id === id) ?? null
-}
-
-export function saveDeal(deal: Deal): void {
-  const deals = getDeals().filter(d => d.id !== deal.id)
-  deals.unshift({ ...deal, updatedAt: new Date().toISOString() })
-  localStorage.setItem(DEALS_KEY, JSON.stringify(deals))
-}
-
-export function deleteDeal(id: string): void {
-  const deals = getDeals().filter(d => d.id !== id)
-  localStorage.setItem(DEALS_KEY, JSON.stringify(deals))
-}
-
-export function updateDealStatus(id: string, status: DealStatus, reviewedBy?: string, reviewNotes?: string): Deal | null {
-  const deal = getDeal(id)
-  if (!deal) return null
-  const updated: Deal = {
-    ...deal,
-    status,
-    ...(reviewedBy ? { reviewedBy, reviewedAt: new Date().toISOString() } : {}),
-    ...(reviewNotes !== undefined ? { reviewNotes } : {}),
-    updatedAt: new Date().toISOString(),
+    const res = await fetch('/api/deals', { cache: 'no-store' })
+    if (!res.ok) throw new Error(`API ${res.status}`)
+    const data = await res.json()
+    return data.deals ?? []
+  } catch (err) {
+    console.error('getDeals error:', err)
+    return []
   }
-  saveDeal(updated)
-  return updated
 }
 
-export function checkOverdueDeals(windowHours: number): string[] {
-  const deals = getDeals()
+export async function getDeal(id: string): Promise<Deal | null> {
+  const deals = await getDeals()
+  return deals.find(d => d.id === id) ?? null
+}
+
+export async function saveDeal(deal: Deal): Promise<void> {
+  try {
+    const res = await fetch('/api/deals', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ deal }),
+    })
+    if (!res.ok) throw new Error(`API ${res.status}`)
+  } catch (err) {
+    console.error('saveDeal error:', err)
+    throw err
+  }
+}
+
+export async function updateDealStatus(
+  id: string,
+  status: DealStatus,
+  reviewedBy?: string,
+  reviewNotes?: string
+): Promise<Deal | null> {
+  try {
+    const res = await fetch('/api/deals', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, status, reviewedBy, reviewNotes }),
+    })
+    if (!res.ok) throw new Error(`API ${res.status}`)
+    const data = await res.json()
+    return data.deal ?? null
+  } catch (err) {
+    console.error('updateDealStatus error:', err)
+    return null
+  }
+}
+
+export async function deleteDeal(id: string): Promise<void> {
+  try {
+    const res = await fetch('/api/deals', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id }),
+    })
+    if (!res.ok) throw new Error(`API ${res.status}`)
+  } catch (err) {
+    console.error('deleteDeal error:', err)
+    throw err
+  }
+}
+
+export async function checkOverdueDeals(windowHours: number): Promise<string[]> {
+  const deals = await getDeals()
   const overdueIds: string[] = []
   const now = Date.now()
   for (const deal of deals) {
     if (deal.status === 'pending_review') {
-      const submitted = new Date(deal.submittedAt).getTime()
+      const submitted    = new Date(deal.submittedAt).getTime()
       const hoursElapsed = (now - submitted) / (1000 * 60 * 60)
       if (hoursElapsed > windowHours) {
         overdueIds.push(deal.id)
-        updateDealStatus(deal.id, 'overdue')
+        await updateDealStatus(deal.id, 'overdue')
       }
     }
   }
   return overdueIds
 }
+
+// ── CSV / DOWNLOAD — unchanged ────────────────────────────────────────────────
 
 export function dealsToCSV(deals: Deal[]): string {
   const headers = [
@@ -78,17 +113,20 @@ export function dealsToCSV(deals: Deal[]): string {
     d.proposedPL.investmentCaseRequired ? 'Yes' : 'No',
     d.status, d.submittedAt, d.reviewedBy || '', d.reviewedAt || '', d.reviewNotes || ''
   ])
-  return [headers, ...rows].map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n')
+  return [headers, ...rows]
+    .map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(','))
+    .join('\n')
 }
 
 export function downloadCSV(content: string, filename: string): void {
   const blob = new Blob([content], { type: 'text/csv' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
+  const url  = URL.createObjectURL(blob)
+  const a    = document.createElement('a')
   a.href = url; a.download = filename; a.click()
   URL.revokeObjectURL(url)
 }
-// ── FEEDBACK LOG ─────────────────────────────────────────────────────────────
+
+// ── FEEDBACK LOG — localStorage (per-device, no sharing needed) ───────────────
 const FEEDBACK_KEY = 'hugo_feedback'
 
 export interface FeedbackEntry {
@@ -96,7 +134,7 @@ export interface FeedbackEntry {
   submittedBy: string
   submittedByEmail: string
   submittedAt: string
-  category: 'general' | 'bug' | 'calculation' | 'ux' | 'feature'
+  category: 'general' | 'bug' | 'calculation' | 'ux' | 'feature' | 'assumptions'
   feedback: string
   dealRef?: string
 }
@@ -123,4 +161,53 @@ export function feedbackToCSV(entries: FeedbackEntry[]): string {
   return [headers, ...rows]
     .map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(','))
     .join('\n')
+}
+
+// ── AUDIT TRAIL — localStorage (admin-only, per-session) ─────────────────────
+const AUDIT_KEY = 'hugo_audit'
+
+export interface AuditEntry {
+  id: string
+  changedAt: string
+  changedBy: string
+  changedByEmail: string
+  section: string
+  field: string
+  oldValue: string
+  newValue: string
+}
+
+export function getAuditLog(): AuditEntry[] {
+  if (typeof window === 'undefined') return []
+  try { return JSON.parse(localStorage.getItem(AUDIT_KEY) || '[]') }
+  catch { return [] }
+}
+
+export function addAuditEntry(entry: AuditEntry): void {
+  const log = getAuditLog()
+  log.unshift(entry)
+  localStorage.setItem(AUDIT_KEY, JSON.stringify(log.slice(0, 500)))
+}
+
+export function diffAssumptions(
+  before: Record<string, unknown>,
+  after:  Record<string, unknown>,
+  prefix = ''
+): Array<{ field: string; oldValue: string; newValue: string }> {
+  const changes: Array<{ field: string; oldValue: string; newValue: string }> = []
+  for (const key of Object.keys(after)) {
+    const fullKey = prefix ? `${prefix} › ${key}` : key
+    const bVal    = before[key]
+    const aVal    = after[key]
+    if (typeof aVal === 'object' && aVal !== null && !Array.isArray(aVal)) {
+      changes.push(...diffAssumptions(
+        (bVal as Record<string, unknown>) || {},
+        aVal as Record<string, unknown>,
+        fullKey
+      ))
+    } else if (JSON.stringify(bVal) !== JSON.stringify(aVal)) {
+      changes.push({ field: fullKey, oldValue: String(bVal ?? '—'), newValue: String(aVal ?? '—') })
+    }
+  }
+  return changes
 }
